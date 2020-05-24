@@ -32,3 +32,4 @@ args = parser.parse_args()
 
 experiment = Experiment(args)
 experiment.train()
+experiment.test()
