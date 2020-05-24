@@ -1,0 +1,7 @@
+data/
+saved_models/
+*.egg-info
+*dist/
+.DS_store
+*vscode/
+__pycache__/
