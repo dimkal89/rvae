@@ -42,11 +42,11 @@ class Experiment():
 
         if args.model.lower() == "rvae":
             self.model = RVAE(784, args.latent_dim, args.batch_size, args.num_centers, 
-                              args.enc_layers, args.dec_layers, nnj.Softplus, nnj.Sigmoid,
+                              args.enc_layers, args.dec_layers, nnj.ELU, nnj.Sigmoid,
                               args.rbf_beta, args.rec_b)
         elif args.model.lower() == "vae":
             self.model = VAE(784, args.latent_dim, args.num_centers, args.num_components,
-                             args.enc_layers, args.dec_layers, nnj.Softplus, nnj.Sigmoid,
+                             args.enc_layers, args.dec_layers, nnj.ELU, nnj.Sigmoid,
                              args.rbf_beta, args.rec_b)
         
         self.batch_size = args.batch_size
