@@ -8,7 +8,7 @@ from rvae.geoml import nnj
 from rvae.variational_inference.train import train_rvae, test_rvae, train_vae, test_vae
 from rvae.utils.data_utils import get_mnist_loaders, get_fmnist_loaders
 from rvae.models.vae import RVAE, VAE
-from rvae.utils.save_utils import save_model
+from rvae.utils.save_utils import save_model, load_model
 
 
 class Experiment():
@@ -82,7 +82,11 @@ class Experiment():
                 loss = train_rvae(epoch, self.train_loader, self.batch_size, self.model, 
                                   warmup_optimizer, self.log_invl, self.device)
                 print("\tEpoch: {} (warmup phase), negative ELBO: {:.3f}".format(epoch, loss))
-            
+
+            # warmup checkpoint            
+            savepath = os.path.join(self.rvae_save_dir, self.dataset+"_warmup")
+            save_model(self.model, sigma_optimizer, 0, None, savepath)
+
             self.model.switch = False
             self.model._mean_warmup = False
             self.model._update_latent_codes(self.train_loader)
@@ -122,6 +126,10 @@ class Experiment():
                                  warmup_optimizer, self.log_invl, self.device)
                 print("\tEpoch: {} (warmup phase), negative ELBO: {:.3f}".format(epoch, loss))
 
+            # warmup checkpoint            
+            savepath = os.path.join(self.rvae_save_dir, self.dataset+"_warmup")
+            save_model(self.model, sigma_optimizer, 0, None, savepath)
+
             self.model._update_latent_codes(self.train_loader)
             self.model._update_RBF_centers(beta=0.01)
 
@@ -135,7 +143,15 @@ class Experiment():
                                             self.dataset+"_K"+str(self.model.num_components)+"epoch"+str(epoch)+".ckpt")
                     save_model(self.model, sigma_optimizer, epoch, loss, savepath)
                 
-    def test(self):
+    def eval(self, pretrained_path=None):
+        # load checkpoint
+        if pretrained_path is not None:
+            placeholder_optimizer = torch.optim.Adam(
+                self.model.p_sigma.parameters(),
+                lr=1e-3
+            )
+            load_model(pretrained_path, self.model, placeholder_optimizer)
+
         if isinstance(self.model, RVAE):
             loss = test_rvae(self.test_loader, self.batch_size,
                              self.model, self.device)
