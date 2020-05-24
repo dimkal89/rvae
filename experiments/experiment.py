@@ -19,9 +19,15 @@ class Experiment():
             self.train_loader, self.test_loader = get_mnist_loaders(args.data_dir, args.batch_size)
         elif args.dataset.lower() == "fmnist":
             self.train_loader, self.test_loader = get_fmnist_loaders(args.data_dir, args.batch_size)
+        self.dataset = args.dataset.lower()
         
-        if not os.path.exists(args.save_dir):
-            os.makedirs(args.save_dir)
+        self.rvae_save_dir = os.path.join(args.save_dir, "RVAE/")
+        self.vae_save_dir = os.path.join(args.save_dir, "VAE/")
+        if not os.path.exists(self.rvae_save_dir):
+            os.makedirs(self.rvae_save_dir)
+        if not os.path.exists(self.vae_save_dir):
+            os.makedirs(self.vae_save_dir)
+
         if not os.path.exists(args.res_dir):
             os.makedirs(args.res_dir)
             # create graph directory
@@ -88,6 +94,11 @@ class Experiment():
                 loss = train_rvae(epoch, self.train_loader, self.batch_size, self.model, 
                                   sigma_optimizer, self.log_invl, self.device)
                 print("\tEpoch: {} (sigma optimization), negative ELBO: {:.3f}".format(epoch, loss))
+
+                if epoch % self.save_invl == 0:
+                    savepath = os.path.join(self.rvae_save_dir,
+                                            self.dataset+"_epoch"+str(epoch)+"ckpt")
+                    save_model(self.model, sigma_optimizer, epoch, loss, savepath)
         
         # ================= VAE =================
         else:
@@ -118,6 +129,11 @@ class Experiment():
                 loss = train_vae(epoch, self.train_loader, self.batch_size, self.model, 
                                  sigma_optimizer, self.log_invl, self.device)
                 print("\tEpoch: {} (sigma optimization), negative ELBO: {:.3f}".format(epoch, loss))
+
+                if epoch % self.save_invl == 0:
+                    savepath = os.path.join(self.vae_save_dir, 
+                                            self.dataset+"_K"+str(self.model.num_components)+"epoch"+str(epoch)+".ckpt")
+                    save_model(self.model, sigma_optimizer, epoch, loss, savepath)
                 
     def test(self):
         if isinstance(self.model, RVAE):

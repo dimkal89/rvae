@@ -29,9 +29,6 @@ parser.add_argument("--num_components", default=10, type=int, help="number of co
 parser.add_argument("--load_mode", default=False, type=bool)
 parser.add_argument("--id", default=str)
 args = parser.parse_args()
-# args = {
-#     "data_dir"
-# }
 
 experiment = Experiment(args)
 experiment.train()

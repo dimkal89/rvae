@@ -1,7 +1,7 @@
 import torch
 
 from torch.distributions import Normal, kl_divergence
-from ..misc import log_bm_krn, log_multibm_krn, log_gauss_mix
+from ..misc import log_bm_krn, log_gauss_mix
 
 
 def elbo_rvae(data, p_mu, p_sigma, z, q_mu, q_t, model, beta):
