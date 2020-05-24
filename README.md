@@ -31,9 +31,9 @@ and run `./experiments/run_experiments.sh` with the following options:
 sh run_experiments.sh
 ```
 
-`-m`    the model, one of {`"RVAE", "VAE"`}
-`-d`    the dataset, one of {`"mnist", "fmnist"`}
-`-l`    the dimension of the latent variable
-`-c`    the components of the VampPrior, set 1 for a vanilla VAE, 
-        will default to 1 in the case of RVAE
+`-m`    the model, one of {`"RVAE", "VAE"`} \
+`-d`    the dataset, one of {`"mnist", "fmnist"`} \
+`-l`    the dimension of the latent variable \
+`-c`    the components of the VampPrior, set 1 for a vanilla VAE, \
+          will default to 1 in the case of RVAE
 
