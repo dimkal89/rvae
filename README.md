@@ -1,6 +1,6 @@
 # Variational Autoencoders with Riemannian Brownian Motion Prior
 
-Code for the paper [Variational Autoencoders with Riemannian Brownian Motion Priors](https://arxiv.org/abs/2002.05227)
+Code for the paper [Variational Autoencoders with Riemannian Brownian Motion Priors](https://arxiv.org/abs/2002.05227) by Dimitris Kalatzis, David Eklund, Georgios Arvanitidis, Søren Hauberg
 
 ## Running the code
 ### Installing the project package
@@ -27,13 +27,12 @@ to look at these as well if you want to modify the code.
 To run the experiments simply navigate to `./experiments` 
 and run `./experiments/run_experiments.sh` with the following options:
 
-```
-sh run_experiments.sh
-```
+`-m` -- the model, one of {`"RVAE", "VAE"`} \
+`-d` -- the dataset, one of {`"mnist", "fmnist"`} \
+`-l` -- the dimension of the latent variable \
+`-c` -- the components of the VampPrior, set 1 for a vanilla VAE, will default to 1 in the case of RVAE
 
-`-m`    the model, one of {`"RVAE", "VAE"`} \
-`-d`    the dataset, one of {`"mnist", "fmnist"`} \
-`-l`    the dimension of the latent variable \
-`-c`    the components of the VampPrior, set 1 for a vanilla VAE, \
-          will default to 1 in the case of RVAE
-
+E.g.
+```
+sh run_experiments.sh -m RVAE -d fmnist -l 10 -c 1
+```
