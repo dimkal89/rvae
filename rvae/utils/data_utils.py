@@ -25,10 +25,10 @@ def get_fmnist_loaders(data_dir, batch_size, shuffle=True):
         shuffle:     boolean - whether to shuffle the training set or not
     """
     train_loader = DataLoader(
-                        MNIST(data_dir, train=True, transform=ToTensor(), download=True), 
+                        FashionMNIST(data_dir, train=True, transform=ToTensor(), download=True), 
                         shuffle=shuffle, batch_size=batch_size)
     test_loader = DataLoader(
-                        MNIST(data_dir, train=False, transform=ToTensor(), download=True), 
+                        FashionMNIST(data_dir, train=False, transform=ToTensor(), download=True), 
                         shuffle=False, batch_size=batch_size)
     
     return train_loader, test_loader
