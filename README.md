@@ -1,6 +1,7 @@
 # Variational Autoencoders with Riemannian Brownian Motion Prior
 
-Code for the paper [Variational Autoencoders with Riemannian Brownian Motion Priors](https://arxiv.org/abs/2002.05227) by Dimitris Kalatzis, David Eklund, Georgios Arvanitidis, Søren Hauberg
+Code for the paper [Variational Autoencoders with Riemannian Brownian Motion Priors](https://arxiv.org/abs/2002.05227) \
+by Dimitris Kalatzis, David Eklund, Georgios Arvanitidis, Søren Hauberg
 
 ## Running the code
 ### Installing the project package
@@ -18,7 +19,7 @@ reinstall the package every time you modify it:
 pip install -e .
 ```
 
-### Run the experiments
+### Running the experiments
 The main script for running the experiments is `./experiments/run_experiments.sh`.
 The logic of the experiments is in `./experiments/experiment.py` and `./experiments/run.py`
 simply parses the command line arguments and runs the experiment, so you will likely want 
@@ -32,7 +33,12 @@ and run `./experiments/run_experiments.sh` with the following options:
 `-l` -- the dimension of the latent variable \
 `-c` -- the components of the VampPrior, set 1 for a vanilla VAE, will default to 1 in the case of RVAE
 
-E.g.
+For example
 ```
 sh run_experiments.sh -m RVAE -d fmnist -l 10 -c 1
 ```
+will run the MNIST experiment for RVAE with a 10-dimensional latent variable.
+
+## Acknowledgements
+Part of the code was lifted verbatim from https://github.com/jmtomczak/vae_vampprior \
+A big thank you to the authors
