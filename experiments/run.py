@@ -28,8 +28,9 @@ parser.add_argument("--num_components", default=128, type=int, help="number of c
 parser.add_argument("--ckpt_path", default=None, type=str)
 args = parser.parse_args()
 
+experiment = Experiment(args)
+
 if args.ckpt_path is None:
-    experiment = Experiment(args)
     experiment.train()
     experiment.eval()
 else:

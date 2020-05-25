@@ -122,10 +122,6 @@ class RVAE(nn.Module):
         z = multibrownian_motion_sample(k, self.pr_means, self.pr_t, self.latent_dim, n_steps, self) 
         x_mu, _ = self.decode(z[::n_steps//100], False)
         
-        # if viz:
-        #     assert z.shape[1] == 2
-        #     plot_brownian_motion(self, z, "./vae_example/results/graphs/bm_epoch_"+str(epoch)+".pdf", device, True)
-        
         return x_mu
 
     def metric(self, z):
