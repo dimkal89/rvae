@@ -1,7 +1,7 @@
 # Variational Autoencoders with Riemannian Brownian Motion Prior
 
 Code for the paper [Variational Autoencoders with Riemannian Brownian Motion Priors](https://arxiv.org/abs/2002.05227) \
-by Dimitris Kalatzis, David Eklund, Georgios Arvanitidis, Søren Hauberg
+by Dimitris Kalatzis, David Eklund, Georgios Arvanitidis, and Søren Hauberg
 
 ## Models and data sets
 The model proposed in the paper is RVAE and the experimental baselines are (a) a vanilla [VAE](https://arxiv.org/abs/1312.6114) with a standard Gaussian prior and (b) a [VAE with VampPrior](https://arxiv.org/abs/1705.07120).

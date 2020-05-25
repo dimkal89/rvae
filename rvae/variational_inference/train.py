@@ -31,9 +31,6 @@ def train_rvae(epoch, train_loader, batch_size, model, optimizer, log_invl, devi
             print("Epoch: {}, batch: {}, loss: {:.3f}, KL: {:.3f}".format(
                 epoch, i, loss.item(), kld.item()
             ))
-            # print("Epoch: {}, batch: {}, loss: {:.3f}, KL: {:.3f}, density: {:.3f}, q var: {:.4f}, p sigma: {:.4f}".format(
-            #       epoch, i, loss.item(), kld.item(), log_pxz.item(), q_var.mean().item(), p_sigma.pow(2).mean().item()
-            # ))
     
     avg_loss = train_loss/n_batches
 
@@ -51,8 +48,7 @@ def test_rvae(test_loader, batch_size, model, device):
             data = data.view(-1, 784).to(device)
             
             p_mu, p_sigma, z, q_mu, q_t = model(data)
-            loss = elbo_vae(data, p_mu, p_sigma, z, q_mu, 
-                            q_t, model.pr_means, model.pr_t, model, 1.)
+            loss = elbo_vae(data, p_mu, p_sigma, z, q_mu, q_t, model, 1.)
             test_loss += loss[0]    # ELBO
             test_kld += loss[2]     # KL div
 

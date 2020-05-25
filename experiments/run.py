@@ -1,6 +1,5 @@
 import argparse
 
-# from experiments.experiment import Experiment
 from .experiment import Experiment
 
 
@@ -29,6 +28,9 @@ parser.add_argument("--num_components", default=128, type=int, help="number of c
 parser.add_argument("--ckpt_path", default=None, type=str)
 args = parser.parse_args()
 
-experiment = Experiment(args)
-experiment.train()
-experiment.eval()
+if args.ckpt_path is None:
+    experiment = Experiment(args)
+    experiment.train()
+    experiment.eval()
+else:
+    experiment.eval(args.ckpt_path)
