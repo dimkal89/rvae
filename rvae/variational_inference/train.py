@@ -48,7 +48,7 @@ def test_rvae(test_loader, batch_size, model, device):
             data = data.view(-1, 784).to(device)
             
             p_mu, p_sigma, z, q_mu, q_t = model(data)
-            loss = elbo_vae(data, p_mu, p_sigma, z, q_mu, q_t, model, 1.)
+            loss = elbo_rvae(data, p_mu, p_sigma, z, q_mu, q_t, model, 1.)
             test_loss += loss[0]    # ELBO
             test_kld += loss[2]     # KL div
 
