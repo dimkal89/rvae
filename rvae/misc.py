@@ -171,7 +171,6 @@ def log_gauss_mix(x, mu, var):
     mu_xp = mu.unsqueeze(0)
     var_xp = var.unsqueeze(0)
 
-    a = Normal(mu, var).log_prob(x) - math.log(K)
     a = log_Normal_diag(x_xp, mu_xp, torch.log(var_xp + 1e-5), dim=2) - math.log(K)
     a_max, _ = torch.max(a, 1)  # MB x 1
 
