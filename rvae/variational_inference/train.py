@@ -8,6 +8,7 @@ from .losses import elbo_rvae, elbo_vae
 def train_rvae(epoch, train_loader, batch_size, model, optimizer, log_invl, device):
     model.train()
     train_loss = 0.
+    train_kld = 0.
     n_batches = len(train_loader.dataset.data)//batch_size
 
     for i, (data, labels) in enumerate(train_loader):
@@ -32,9 +33,10 @@ def train_rvae(epoch, train_loader, batch_size, model, optimizer, log_invl, devi
                 epoch, i, loss.item(), kld.item()
             ))
     
-    avg_loss = train_loss/n_batches
+    train_loss /= n_batches
+    train_kld /= n_batches
 
-    return avg_loss
+    return train_loss, train_kld
 
 
 def test_rvae(test_loader, batch_size, model, device):
@@ -61,6 +63,7 @@ def test_rvae(test_loader, batch_size, model, device):
 def train_vae(epoch, train_loader, batch_size, model, optimizer, log_invl, device):
     model.train()
     train_loss = 0.
+    train_kld = 0.
     n_batches = len(train_loader.dataset.data)//batch_size
 
     for i, (data, labels) in enumerate(train_loader):
@@ -76,21 +79,23 @@ def train_vae(epoch, train_loader, batch_size, model, optimizer, log_invl, devic
         loss, log_pxz, kld = elbo_vae(data, p_mu, p_var, z, q_mu, q_var, pr_mu, pr_var, beta, vampprior)
         loss.backward()
         train_loss += loss.item()
+        train_kld += kld
         optimizer.step()
 
         if i % log_invl == 0:
             print("Epoch: {}, batch: {}, loss: {:.3f}, KL: {:.3f}".format(
                 epoch, i, loss.item(), kld.item()
             ))
-        
-    avg_loss = train_loss/n_batches
+    
+    train_loss /= n_batches
+    train_kld /= n_batches
 
-    return avg_loss
+    return train_loss, train_kld 
 
 
 def test_vae(test_loader, b_sz, model, device):
     model.eval()
-    avg_loss = 0
+    test_loss = 0
     test_kld = 0
     n_batches = len(test_loader.dataset.data)//b_sz
 
@@ -101,10 +106,10 @@ def test_vae(test_loader, b_sz, model, device):
             p_mu, p_var, z, q_mu, q_var, pr_mu, pr_var = model(data)
             vampprior = True if model.num_components > 1 else False
             loss = elbo_vae(data, p_mu, p_var, z, q_mu, q_var, pr_mu, pr_var, 1, vampprior)
-            avg_loss += loss[0]     # ELBO
+            test_loss += loss[0]     # ELBO
             test_kld += loss[2]     # KL div
 
-        avg_loss /= n_batches
+        test_loss /= n_batches
         test_kld /= n_batches
 
-        return avg_loss, test_kld
+        return test_loss, test_kld

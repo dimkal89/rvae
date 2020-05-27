@@ -79,8 +79,8 @@ class Experiment():
 
             # encoder/decoder mean optimization
             for epoch in range(1, self.mu_epochs + 1):
-                loss = train_rvae(epoch, self.train_loader, self.batch_size, self.model, 
-                                  warmup_optimizer, self.log_invl, self.device)
+                loss, _ = train_rvae(epoch, self.train_loader, self.batch_size, self.model, 
+                                     warmup_optimizer, self.log_invl, self.device)
                 print("\tEpoch: {} (warmup phase), negative ELBO: {:.3f}".format(epoch, loss))
 
             # warmup checkpoint            
@@ -95,8 +95,8 @@ class Experiment():
             
             # decoder sigma/prior parameters optimization
             for epoch in range(1, self.sigma_epochs + 1):
-                loss = train_rvae(epoch, self.train_loader, self.batch_size, self.model, 
-                                  sigma_optimizer, self.log_invl, self.device)
+                loss, _ = train_rvae(epoch, self.train_loader, self.batch_size, self.model, 
+                                     sigma_optimizer, self.log_invl, self.device)
                 print("\tEpoch: {} (sigma optimization), negative ELBO: {:.3f}".format(epoch, loss))
 
                 if epoch % self.save_invl == 0:
@@ -122,20 +122,21 @@ class Experiment():
 
             # encoder/decoder mean optimization
             for epoch in range(1, self.mu_epochs + 1):
-                loss = train_vae(epoch, self.train_loader, self.batch_size, self.model, 
-                                 warmup_optimizer, self.log_invl, self.device)
+                loss, _ = train_vae(epoch, self.train_loader, self.batch_size, self.model, 
+                                    warmup_optimizer, self.log_invl, self.device)
                 print("\tEpoch: {} (warmup phase), negative ELBO: {:.3f}".format(epoch, loss))
 
             # warmup checkpoint            
             savepath = os.path.join(self.rvae_save_dir, self.dataset+"_warmup")
             save_model(self.model, sigma_optimizer, 0, None, savepath)
 
+            self.model.switch = False
             self.model._update_latent_codes(self.train_loader)
             self.model._update_RBF_centers(beta=0.01)
 
             for epoch in range(1, self.sigma_epochs + 1):
-                loss = train_vae(epoch, self.train_loader, self.batch_size, self.model, 
-                                 sigma_optimizer, self.log_invl, self.device)
+                loss, _ = train_vae(epoch, self.train_loader, self.batch_size, self.model, 
+                                    sigma_optimizer, self.log_invl, self.device)
                 print("\tEpoch: {} (sigma optimization), negative ELBO: {:.3f}".format(epoch, loss))
 
                 if epoch % self.save_invl == 0:
@@ -153,10 +154,8 @@ class Experiment():
             load_model(pretrained_path, self.model, placeholder_optimizer)
 
         if isinstance(self.model, RVAE):
-            loss = test_rvae(self.test_loader, self.batch_size,
-                             self.model, self.device)
+            loss, _ = test_rvae(self.test_loader, self.batch_size, self.model, self.device)
         else:
-            loss = test_vae(self.test_loader, self.batch_size, 
-                            self.model, self.device)
+            loss, _ = test_vae(self.test_loader, self.batch_size, self.model, self.device)
         
         print("Test set negative ELBO: {:.3f}".format(loss))
