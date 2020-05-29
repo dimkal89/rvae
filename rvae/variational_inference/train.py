@@ -9,7 +9,7 @@ def train_rvae(epoch, train_loader, batch_size, model, optimizer, log_invl, devi
     model.train()
     train_loss = 0.
     train_kld = 0.
-    n_batches = len(train_loader.dataset.data)//batch_size
+    n_batches = len(train_loader.dataset)//batch_size
 
     for i, (data, labels) in enumerate(train_loader):
         beta = 1
@@ -43,7 +43,7 @@ def test_rvae(test_loader, batch_size, model, device):
     model.eval()
     test_loss = 0
     test_kld = 0
-    n_batches = len(test_loader.dataset.data)//batch_size
+    n_batches = len(test_loader.dataset)//batch_size
 
     with torch.no_grad():
         for _, (data, labels) in enumerate(test_loader):
@@ -64,7 +64,7 @@ def train_vae(epoch, train_loader, batch_size, model, optimizer, log_invl, devic
     model.train()
     train_loss = 0.
     train_kld = 0.
-    n_batches = len(train_loader.dataset.data)//batch_size
+    n_batches = len(train_loader.dataset)//batch_size
 
     for i, (data, labels) in enumerate(train_loader):
         beta = min(epoch/200, 1)
@@ -97,7 +97,7 @@ def test_vae(test_loader, b_sz, model, device):
     model.eval()
     test_loss = 0
     test_kld = 0
-    n_batches = len(test_loader.dataset.data)//b_sz
+    n_batches = len(test_loader.dataset)//b_sz
 
     with torch.no_grad():
         for _, (data, labels) in enumerate(test_loader):

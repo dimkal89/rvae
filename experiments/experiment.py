@@ -6,20 +6,23 @@ from itertools import chain
 from rvae.geoml import nnj
 
 from rvae.variational_inference.train import train_rvae, test_rvae, train_vae, test_vae
-from rvae.utils.data_utils import get_mnist_loaders, get_fmnist_loaders
+from rvae.utils.data_utils import get_mnist_loaders, get_fmnist_loaders, get_omniglot_loaders
 from rvae.models.vae import RVAE, VAE
 from rvae.utils.save_utils import save_model, load_model
 
 
 class Experiment():
     def __init__(self, args):
+        self.dataset = args.dataset.lower()
+
         if not os.path.exists(args.data_dir):
             os.makedirs(args.data_dir)
-        if args.dataset.lower() == "mnist":
+        if self.dataset == "mnist":
             self.train_loader, self.test_loader = get_mnist_loaders(args.data_dir, args.batch_size)
-        elif args.dataset.lower() == "fmnist":
+        elif self.dataset == "fmnist":
             self.train_loader, self.test_loader = get_fmnist_loaders(args.data_dir, args.batch_size)
-        self.dataset = args.dataset.lower()
+        elif self.dataset == "omniglot":
+            self.train_loader, self.test_loader = get_omniglot_loaders(args.data_dir, args.batch_size)
         
         self.rvae_save_dir = os.path.join(args.save_dir, "RVAE/")
         self.vae_save_dir = os.path.join(args.save_dir, "VAE/")
