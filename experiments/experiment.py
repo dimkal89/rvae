@@ -19,10 +19,13 @@ class Experiment():
             os.makedirs(args.data_dir)
         if self.dataset == "mnist":
             self.train_loader, self.test_loader = get_mnist_loaders(args.data_dir, args.batch_size)
+            in_dim = 784
         elif self.dataset == "fmnist":
             self.train_loader, self.test_loader = get_fmnist_loaders(args.data_dir, args.batch_size)
+            in_dim = 784
         elif self.dataset == "omniglot":
             self.train_loader, self.test_loader = get_omniglot_loaders(args.data_dir, args.batch_size)
+            in_dim = 105**2
         
         self.rvae_save_dir = os.path.join(args.save_dir, "RVAE/")
         self.vae_save_dir = os.path.join(args.save_dir, "VAE/")
@@ -44,11 +47,11 @@ class Experiment():
             np.random.seed(args.seed)
 
         if args.model.lower() == "rvae":
-            self.model = RVAE(784, args.latent_dim, args.batch_size, args.num_centers, 
+            self.model = RVAE(in_dim, args.latent_dim, args.batch_size, args.num_centers, 
                               args.enc_layers, args.dec_layers, nnj.ELU, nnj.Sigmoid,
                               args.rbf_beta, args.rec_b)
         elif args.model.lower() == "vae":
-            self.model = VAE(784, args.latent_dim, args.num_centers, args.num_components,
+            self.model = VAE(in_dim, args.latent_dim, args.num_centers, args.num_components,
                              args.enc_layers, args.dec_layers, nnj.ELU, nnj.Sigmoid,
                              args.rbf_beta, args.rec_b)
         

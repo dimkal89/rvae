@@ -14,7 +14,7 @@ def train_rvae(epoch, train_loader, batch_size, model, optimizer, log_invl, devi
     for i, (data, labels) in enumerate(train_loader):
         beta = 1
         optimizer.zero_grad()
-        data = data.view(-1, 784).to(device)
+        data = data.view(-1, data.shape[-1] * data.shape[-2]).to(device)
 
         p_mu, p_sigma, z, q_mu, q_t = model(data)
         model.dummy_pmu.load_state_dict(model.p_mu.state_dict())
@@ -47,7 +47,7 @@ def test_rvae(test_loader, batch_size, model, device):
 
     with torch.no_grad():
         for _, (data, labels) in enumerate(test_loader):
-            data = data.view(-1, 784).to(device)
+            data = data.view(-1, data.shape[-1] * data.shape[-2]).to(device)
             
             p_mu, p_sigma, z, q_mu, q_t = model(data)
             loss = elbo_rvae(data, p_mu, p_sigma, z, q_mu, q_t, model, 1.)
@@ -69,7 +69,7 @@ def train_vae(epoch, train_loader, batch_size, model, optimizer, log_invl, devic
     for i, (data, labels) in enumerate(train_loader):
         beta = min(epoch/200, 1)
         optimizer.zero_grad()
-        data = data.view(-1, 784).to(device)
+        data = data.view(-1, data.shape[-1] * data.shape[-2]).to(device)
         
         p_mu, p_var, z, q_mu, q_var, pr_mu, pr_var = model(data)
         if model.switch:
@@ -101,7 +101,7 @@ def test_vae(test_loader, b_sz, model, device):
 
     with torch.no_grad():
         for _, (data, labels) in enumerate(test_loader):
-            data = data.view(-1, 784).to(device)
+            data = data.view(-1, data.shape[-1] * data.shape[-2]).to(device)
             
             p_mu, p_var, z, q_mu, q_var, pr_mu, pr_var = model(data)
             vampprior = True if model.num_components > 1 else False
