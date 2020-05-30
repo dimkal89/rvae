@@ -14,7 +14,7 @@ class DistSqKL(torch.autograd.Function):
         b_sz = p0.shape[0]
         with torch.no_grad():
             with torch.enable_grad():
-                crv, energy = connecting_geodesic(net, p0, p1, max_iter=100, n_nodes=5, eval_grid=16, l_rate=1e-3)
+                crv, energy = connecting_geodesic(net, p0, p1, max_iter=12, n_nodes=5, eval_grid=16, l_rate=1e-3)
                 lm0 = crv.deriv(torch.zeros(1, device=device)).view(b_sz, -1)
                 lm1 = crv.deriv(torch.ones(1, device=device)).view(b_sz, -1)
                 ctx.save_for_backward(lm0, lm1)
