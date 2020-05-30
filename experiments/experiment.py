@@ -101,8 +101,8 @@ class Experiment():
             
             # decoder sigma/prior parameters optimization
             for epoch in range(1, self.sigma_epochs + 1):
-                loss, _ = train_rvae(epoch, self.train_loader, self.batch_size, self.model, 
-                                     sigma_optimizer, self.log_invl, self.device)
+                loss, _, _ = train_rvae(epoch, self.train_loader, self.batch_size, self.model, 
+                                        sigma_optimizer, self.log_invl, self.device)
                 print("\tEpoch: {} (sigma optimization), negative ELBO: {:.3f}".format(epoch, loss))
 
                 if epoch % self.save_invl == 0:
@@ -128,7 +128,7 @@ class Experiment():
 
             # encoder/decoder mean optimization
             for epoch in range(1, self.mu_epochs + 1):
-                loss, _ = train_vae(epoch, self.train_loader, self.batch_size, self.model, 
+                loss, _, _ = train_vae(epoch, self.train_loader, self.batch_size, self.model, 
                                     warmup_optimizer, self.log_invl, self.device)
                 print("\tEpoch: {} (warmup phase), negative ELBO: {:.3f}".format(epoch, loss))
 
@@ -141,8 +141,8 @@ class Experiment():
             self.model._update_RBF_centers(beta=0.01)
 
             for epoch in range(1, self.sigma_epochs + 1):
-                loss, _ = train_vae(epoch, self.train_loader, self.batch_size, self.model, 
-                                    sigma_optimizer, self.log_invl, self.device)
+                loss, _, _ = train_vae(epoch, self.train_loader, self.batch_size, self.model, 
+                                       sigma_optimizer, self.log_invl, self.device)
                 print("\tEpoch: {} (sigma optimization), negative ELBO: {:.3f}".format(epoch, loss))
 
                 if epoch % self.save_invl == 0:
@@ -160,8 +160,8 @@ class Experiment():
             load_model(pretrained_path, self.model, placeholder_optimizer)
 
         if isinstance(self.model, RVAE):
-            loss, _ = test_rvae(self.test_loader, self.batch_size, self.model, self.device)
+            loss, log_cond, KL = test_rvae(self.test_loader, self.batch_size, self.model, self.device)
         else:
-            loss, _ = test_vae(self.test_loader, self.batch_size, self.model, self.device)
+            loss, log_cond, KL = test_vae(self.test_loader, self.batch_size, self.model, self.device)
         
-        print("Test set negative ELBO: {:.3f}".format(loss))
+        print("Test set negative ELBO: {:.3f}, negative conditional: {:.3f}, KL: {:.3f}".format(loss, log_cond, KL))

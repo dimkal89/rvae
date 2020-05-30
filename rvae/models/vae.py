@@ -65,9 +65,10 @@ class RVAE(nn.Module):
         device = "cuda" if torch.cuda.is_available() else "cpu"
         codes = []
         for _, (data, labels) in enumerate(data_loader):
-            z, _, _ = self.encode(data.view(self.batch_size, -1).to(device))
+            dim1, dim2 = data.shape[-2], data.shape[-1]
+            z, _, _ = self.encode(data.view(-1, dim1 * dim2).to(device))
             codes.append(z)
-        self._latent_codes = torch.stack(codes, dim=0).view(-1, self.latent_dim)
+        self._latent_codes = torch.cat(codes, dim=0).view(-1, self.latent_dim)
     
     def _update_RBF_centers(self, beta=None):
         device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -198,11 +199,11 @@ class VAE(nn.Module):
         device = "cuda" if torch.cuda.is_available() else "cpu"
         codes = []
         for _, (data, labels) in enumerate(data_loader):
-            batch_size = data.shape[0]
-            q_mu, q_var = self.encode(data.view(batch_size, -1).to(device))
+            dim1, dim2 = data.shape[-2], data.shape[-1]
+            q_mu, q_var = self.encode(data.view(-1, dim1 * dim2).to(device))
             z = self.reparameterize(q_mu, q_var)
             codes.append(z)
-        self._latent_codes = torch.stack(codes, dim=0).view(-1, self.latent_dim)
+        self._latent_codes = torch.cat(codes, dim=0).view(-1, self.latent_dim)
 
     def _update_RBF_centers(self, beta=None):
         device = "cuda" if torch.cuda.is_available() else "cpu"
