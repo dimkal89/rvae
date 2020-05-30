@@ -100,7 +100,7 @@ class Experiment():
             self.model._initialize_prior_means()
             
             # decoder sigma/prior parameters optimization
-            for epoch in range(1, self.sigma_epochs + 1):
+            for epoch in range(1, (self.sigma_epochs - 10) + 1):
                 loss, _, _ = train_rvae(epoch, self.train_loader, self.batch_size, self.model, 
                                         sigma_optimizer, self.log_invl, self.device)
                 print("\tEpoch: {} (sigma optimization), negative ELBO: {:.3f}".format(epoch, loss))
