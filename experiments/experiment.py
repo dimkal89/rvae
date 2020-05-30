@@ -6,7 +6,7 @@ from itertools import chain
 from rvae.geoml import nnj
 
 from rvae.variational_inference.train import train_rvae, test_rvae, train_vae, test_vae
-from rvae.utils.data_utils import get_mnist_loaders, get_fmnist_loaders
+from rvae.utils.data_utils import get_mnist_loaders, get_fmnist_loaders, get_omniglot_loaders
 from rvae.models.vae import RVAE, VAE
 from rvae.utils.save_utils import save_model, load_model
 
@@ -17,8 +17,13 @@ class Experiment():
             os.makedirs(args.data_dir)
         if args.dataset.lower() == "mnist":
             self.train_loader, self.test_loader = get_mnist_loaders(args.data_dir, args.batch_size)
+            in_dim = 784
         elif args.dataset.lower() == "fmnist":
             self.train_loader, self.test_loader = get_fmnist_loaders(args.data_dir, args.batch_size)
+            in_dim = 784
+        elif args.dataset.lower() == "omniglot":
+            self.train_loader, self.test_loader = get_omniglot_loaders(args.data_dir, args.batch_size)
+            in_dim = 105 * 105
         self.dataset = args.dataset.lower()
         
         self.rvae_save_dir = os.path.join(args.save_dir, "RVAE/")
@@ -41,11 +46,11 @@ class Experiment():
             np.random.seed(args.seed)
 
         if args.model.lower() == "rvae":
-            self.model = RVAE(784, args.latent_dim, args.batch_size, args.num_centers, 
+            self.model = RVAE(in_dim, args.latent_dim, args.batch_size, args.num_centers, 
                               args.enc_layers, args.dec_layers, nnj.ELU, nnj.Sigmoid,
                               args.rbf_beta, args.rec_b)
         elif args.model.lower() == "vae":
-            self.model = VAE(784, args.latent_dim, args.num_centers, args.num_components,
+            self.model = VAE(in_dim, args.latent_dim, args.num_centers, args.num_components,
                              args.enc_layers, args.dec_layers, nnj.ELU, nnj.Sigmoid,
                              args.rbf_beta, args.rec_b)
         
@@ -136,7 +141,8 @@ class Experiment():
             # warmup checkpoint            
             savepath = os.path.join(self.rvae_save_dir, self.dataset+"_warmup")
             save_model(self.model, sigma_optimizer, 0, None, savepath)
-
+            
+            self.model.switch = False
             self.model._update_latent_codes(self.train_loader)
             self.model._update_RBF_centers(beta=0.01)
 

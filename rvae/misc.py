@@ -14,7 +14,7 @@ class DistSqKL(torch.autograd.Function):
         b_sz = p0.shape[0]
         with torch.no_grad():
             with torch.enable_grad():
-                crv, energy = connecting_geodesic(net, p0, p1, max_iter=100, n_nodes=5, eval_grid=16, l_rate=1e-3)
+                crv, energy = connecting_geodesic(net, p0, p1, max_iter=10, n_nodes=5, eval_grid=16, l_rate=1e-3)
                 lm0 = crv.deriv(torch.zeros(1, device=device)).view(b_sz, -1)
                 lm1 = crv.deriv(torch.ones(1, device=device)).view(b_sz, -1)
                 ctx.save_for_backward(lm0, lm1)
@@ -171,7 +171,7 @@ def log_gauss_mix(x, mu, var):
     mu_xp = mu.unsqueeze(0)
     var_xp = var.unsqueeze(0)
 
-    a = Normal(mu, var).log_prob(x) - math.log(K)
+    # a = Normal(mu, var).log_prob(x) - math.log(K)
     a = log_Normal_diag(x_xp, mu_xp, torch.log(var_xp + 1e-5), dim=2) - math.log(K)
     a_max, _ = torch.max(a, 1)  # MB x 1
 

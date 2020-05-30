@@ -8,12 +8,12 @@ from .losses import elbo_rvae, elbo_vae
 def train_rvae(epoch, train_loader, batch_size, model, optimizer, log_invl, device):
     model.train()
     train_loss = 0.
-    n_batches = len(train_loader.dataset.data)//batch_size
+    n_batches = len(train_loader.dataset)//batch_size
 
     for i, (data, labels) in enumerate(train_loader):
         beta = 1
         optimizer.zero_grad()
-        data = data.view(-1, 784).to(device)
+        data = data.view(-1, data.shape[-1] * data.shape[-2]).to(device)
 
         p_mu, p_sigma, z, q_mu, q_t = model(data)
         model.dummy_pmu.load_state_dict(model.p_mu.state_dict())
@@ -44,14 +44,14 @@ def test_rvae(test_loader, batch_size, model, device):
     model.eval()
     test_loss = 0
     test_kld = 0
-    n_batches = len(test_loader.dataset.data)//batch_size
+    n_batches = len(test_loader.dataset)//batch_size
 
     with torch.no_grad():
         for _, (data, labels) in enumerate(test_loader):
-            data = data.view(-1, 784).to(device)
+            data = data.view(-1, data.shape[-1] * data.shape[-2]).to(device)
             
             p_mu, p_sigma, z, q_mu, q_t = model(data)
-            loss = elbo_vae(data, p_mu, p_sigma, z, q_mu, 
+            loss = elbo_rvae(data, p_mu, p_sigma, z, q_mu, 
                             q_t, model, 1.)
             test_loss += loss[0]    # ELBO
             test_kld += loss[2]     # KL div
@@ -59,18 +59,18 @@ def test_rvae(test_loader, batch_size, model, device):
     test_loss /= n_batches
     test_kld /= n_batches
     
-    return test_loss, test_kld
+    return test_loss
 
 
 def train_vae(epoch, train_loader, batch_size, model, optimizer, log_invl, device):
     model.train()
     train_loss = 0.
-    n_batches = len(train_loader.dataset.data)//batch_size
+    n_batches = len(train_loader.dataset)//batch_size
 
     for i, (data, labels) in enumerate(train_loader):
         beta = min(epoch/200, 1)
         optimizer.zero_grad()
-        data = data.view(-1, 784).to(device)
+        data = data.view(-1, data.shape[-1] * data.shape[-2]).to(device)
         
         p_mu, p_var, z, q_mu, q_var, pr_mu, pr_var = model(data)
         if model.switch:
@@ -96,11 +96,11 @@ def test_vae(test_loader, b_sz, model, device):
     model.eval()
     avg_loss = 0
     test_kld = 0
-    n_batches = len(test_loader.dataset.data)//b_sz
+    n_batches = len(test_loader.dataset)//b_sz
 
     with torch.no_grad():
         for _, (data, labels) in enumerate(test_loader):
-            data = data.view(-1, 784).to(device)
+            data = data.view(-1, data.shape[-1] * data.shape[-2]).to(device)
             
             p_mu, p_var, z, q_mu, q_var, pr_mu, pr_var = model(data)
             vampprior = True if model.num_components > 1 else False
@@ -111,4 +111,4 @@ def test_vae(test_loader, b_sz, model, device):
         avg_loss /= n_batches
         test_kld /= n_batches
 
-        return avg_loss, test_kld
+        return avg_loss
