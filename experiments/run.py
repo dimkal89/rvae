@@ -1,6 +1,6 @@
 import argparse
 
-from .experiment import Experiment
+from experiment import Experiment
 
 
 parser = argparse.ArgumentParser()
