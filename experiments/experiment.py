@@ -94,10 +94,8 @@ class Experiment():
             save_model(self.model, sigma_optimizer, 0, None, savepath)
 
             self.model.switch = False
-            self.model._mean_warmup = False
             self.model._update_latent_codes(self.train_loader)
             self.model._update_RBF_centers(beta=0.01)
-            self.model._initialize_prior_means()
             
             # decoder sigma/prior parameters optimization
             for epoch in range(1, (self.sigma_epochs - 10) + 1):
@@ -109,7 +107,19 @@ class Experiment():
                     savepath = os.path.join(self.rvae_save_dir,
                                             self.dataset+"_epoch"+str(epoch)+"ckpt")
                     save_model(self.model, sigma_optimizer, epoch, loss, savepath)
-        
+            
+            self.model._mean_warmup = False
+            self.model._initialize_prior_means()
+            
+            for epoch in range(self.sigma_epochs - 10, self.sigma_epochs + 1):
+                loss, _, _ = train_rvae(epoch, self.train_loader, self.batch_size, self.model, 
+                                        sigma_optimizer, self.log_invl, self.device)
+                print("\tEpoch: {} (sigma optimization), negative ELBO: {:.3f}".format(epoch, loss))
+
+            savepath = os.path.join(self.rvae_save_dir,
+                                    self.dataset+"_epoch"+str(epoch)+"ckpt")
+            save_model(self.model, sigma_optimizer, epoch, loss, savepath)
+
         # ================= VAE =================
         else:
             warmup_optimizer = torch.optim.Adam(
