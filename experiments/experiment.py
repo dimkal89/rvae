@@ -6,7 +6,7 @@ from itertools import chain
 
 from rvae.geoml import nnj
 from rvae.variational_inference.train import train_rvae, test_rvae, train_vae, test_vae
-from rvae.utils.data_utils import get_mnist_loaders, get_fmnist_loaders, get_omniglot_loaders
+from rvae.utils.data_utils import get_mnist_loaders, get_fmnist_loaders, get_kmnist_loaders
 from rvae.models.vae import RVAE, VAE
 from rvae.utils.save_utils import save_model, load_model
 
