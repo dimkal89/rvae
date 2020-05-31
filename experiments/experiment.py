@@ -138,8 +138,8 @@ class Experiment():
 
             # encoder/decoder mean optimization
             for epoch in range(1, self.mu_epochs + 1):
-                loss, _, _ = train_vae(epoch, self.train_loader, self.batch_size, self.model, 
-                                    warmup_optimizer, self.log_invl, self.device)
+                loss, _, _ = train_vae(epoch, 200, self.train_loader, self.batch_size, self.model, 
+                                       warmup_optimizer, self.log_invl, self.device)
                 print("\tEpoch: {} (warmup phase), negative ELBO: {:.3f}".format(epoch, loss))
 
             # warmup checkpoint            
@@ -151,7 +151,7 @@ class Experiment():
             self.model._update_RBF_centers(beta=0.01)
 
             for epoch in range(1, self.sigma_epochs + 1):
-                loss, _, _ = train_vae(epoch, self.train_loader, self.batch_size, self.model, 
+                loss, _, _ = train_vae(epoch, 1, self.train_loader, self.batch_size, self.model, 
                                        sigma_optimizer, self.log_invl, self.device)
                 print("\tEpoch: {} (sigma optimization), negative ELBO: {:.3f}".format(epoch, loss))
 

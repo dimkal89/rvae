@@ -66,7 +66,7 @@ def test_rvae(test_loader, batch_size, model, device):
     return test_loss, test_rec, test_kld
 
 
-def train_vae(epoch, train_loader, batch_size, model, optimizer, log_invl, device):
+def train_vae(epoch, annealing_epochs, train_loader, batch_size, model, optimizer, log_invl, device):
     model.train()
     train_loss = 0.
     train_kld = 0.
@@ -74,7 +74,7 @@ def train_vae(epoch, train_loader, batch_size, model, optimizer, log_invl, devic
     n_batches = len(train_loader.dataset)//batch_size
 
     for i, (data, labels) in enumerate(train_loader):
-        beta = min(epoch/200, 1)
+        beta = min(epoch/annealing_epochs, 1)
         optimizer.zero_grad()
         data = data.view(-1, data.shape[-1] * data.shape[-2]).to(device)
         
