@@ -30,7 +30,5 @@ def elbo_vae(data, p_mu, p_var, z, q_mu, q_var, pr_mu, pr_var, beta, vampprior=F
         KL = log_qzx - log_pz
     else:
         KL = kl_divergence(qzx, pz).sum(-1)
-        print(KL.shape)
-        input("w")
 
     return (-log_pxz + beta * KL).mean(), -log_pxz.mean(), KL.mean()
