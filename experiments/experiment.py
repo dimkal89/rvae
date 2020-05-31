@@ -3,8 +3,8 @@ import torch
 import numpy as np
 
 from itertools import chain
-from rvae.geoml import nnj
 
+from rvae.geoml import nnj
 from rvae.variational_inference.train import train_rvae, test_rvae, train_vae, test_vae
 from rvae.utils.data_utils import get_mnist_loaders, get_fmnist_loaders, get_omniglot_loaders
 from rvae.models.vae import RVAE, VAE
@@ -123,22 +123,28 @@ class Experiment():
         # ================= VAE =================
         else:
             warmup_optimizer = torch.optim.Adam(
-                chain(
-                    self.model.encoder.parameters(),
-                    self.model.q_mu.parameters(),
-                    self.model.q_var.parameters(),
-                    self.model.decoder.parameters(),
-                    self.model.p_mu.parameters()), 
-                lr=self.warmup_learning_rate
+                chain(self.model.encoder.parameters(),
+                      self.model.q_mu.parameters(),
+                      self.model.q_var.parameters(),
+                      self.model.decoder.parameters(),
+                      self.model.p_mu.parameters()), 
+                      lr=self.warmup_learning_rate
             )
-            sigma_optimizer = torch.optim.Adam(
-                self.model.p_sigma.parameters(),
-                lr=self.sigma_learning_rate
-            )
+
+            if self.model.num_components > 1:
+                sigma_optimizer = torch.optim.Adam(
+                    chain(self.model.p_sigma.parameters(), self.model.means.parameters()),
+                    lr=self.sigma_learning_rate
+                )
+            else:
+                sigma_optimizer = torch.optim.Adam(
+                    self.model.p_sigma.parameters(),
+                    lr=self.sigma_learning_rate
+                )
 
             # encoder/decoder mean optimization
             for epoch in range(1, self.mu_epochs + 1):
-                loss, _, _ = train_vae(epoch, 200, self.train_loader, self.batch_size, self.model, 
+                loss, _, _ = train_vae(epoch, 100, self.train_loader, self.batch_size, self.model, 
                                        warmup_optimizer, self.log_invl, self.device)
                 print("\tEpoch: {} (warmup phase), negative ELBO: {:.3f}".format(epoch, loss))
 

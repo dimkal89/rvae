@@ -42,7 +42,7 @@ For example
 ```
 sh run_experiments.sh -m RVAE -d fmnist -l 10 -c 1
 ```
-will run the MNIST experiment for RVAE with a 10-dimensional latent variable.
+will run the FashionMNIST experiment for RVAE with a 10-dimensional latent variable.
 
 ## Acknowledgements
 Part of the code was lifted verbatim from https://github.com/jmtomczak/vae_vampprior
