@@ -1,5 +1,5 @@
 import torch
-from torchvision.datasets import MNIST, FashionMNIST, Omniglot
+from torchvision.datasets import MNIST, FashionMNIST, KMNIST
 from torchvision.transforms import ToTensor
 from torch.utils.data import DataLoader, Dataset
 
@@ -53,8 +53,8 @@ def get_mnist_loaders(data_dir, b_sz, shuffle=True):
     return train_loader, test_loader
 
 
-def get_omniglot_loaders(data_dir, b_sz, shuffle=True):
-    """Helper function that deserializes Omniglot data 
+def get_kmnist_loaders(data_dir, b_sz, shuffle=True):
+    """Helper function that deserializes KMNIST data 
     and returns the relevant data loaders.
 
     params:
@@ -63,10 +63,10 @@ def get_omniglot_loaders(data_dir, b_sz, shuffle=True):
         shuffle:     boolean - whether to shuffle the training set or not
     """
     train_loader = DataLoader(
-                        Omniglot(data_dir, transform=ToTensor(), download=True),
+                        KMNIST(data_dir, transform=ToTensor(), download=True),
                         shuffle=shuffle, batch_size=b_sz)
     test_loader = DataLoader(
-                        Omniglot(data_dir, background=False, transform=ToTensor(), download=True),
+                        KMNIST(data_dir, train=False, transform=ToTensor(), download=True),
                         shuffle=False, batch_size=b_sz)
     
     return train_loader, test_loader
