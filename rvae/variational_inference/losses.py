@@ -21,13 +21,16 @@ def elbo_rvae(data, p_mu, p_sigma, z, q_mu, q_t, model, beta):
 
 def elbo_vae(data, p_mu, p_var, z, q_mu, q_var, pr_mu, pr_var, beta, vampprior=False):
     log_pxz = Normal(p_mu, p_var.sqrt()).log_prob(data).sum(-1)
-    log_qzx = Normal(q_mu, q_var.sqrt()).log_prob(z).sum(-1)
-
+    qzx = Normal(q_mu, q_var.sqrt())
+    pz = Normal(pr_mu, pr_var)
     if vampprior:
+        log_qzx = qzx.log_prob(z).sum(-1)
         log_pz = log_gauss_mix(z, pr_mu, pr_var)
+        
+        KL = log_qzx - log_pz
     else:
-        log_pz = Normal(pr_mu, pr_var).log_prob(z)
-
-    KL = log_qzx - log_pz
+        KL = kl_divergence(qzx, pz).sum(-1)
+        print(KL.shape)
+        input("w")
 
     return (-log_pxz + beta * KL).mean(), -log_pxz.mean(), KL.mean()
