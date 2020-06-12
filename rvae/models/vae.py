@@ -196,8 +196,7 @@ class VAE(nn.Module):
             out_fn:             torch.nn.Module - network output function
             rbf_beta:           float - the bandwidth of the RBF kernel
             rec_b:              float - a small constant added to the reciprocal
-                                for the numerically stable precision 
-                                computations"""
+                                for numerically stable precision computations"""
         
         super(VAE, self).__init__()
         self.latent_dim = latent_dim
