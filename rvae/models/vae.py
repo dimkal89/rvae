@@ -6,23 +6,31 @@ from torch import nn
 from sklearn.cluster import KMeans
 from ..geoml import nnj
 from .templates import MLP, NonLinear
-from ..misc import multibrownian_motion_sample
+from ..misc import brownian_motion_sample
 
  
 class RVAE(nn.Module):
-    """
+    """Variational Autoencoder with a Riemannian Brownian motion prior."""
     
-    IMPORTANT NOTES - READ:
-        -   The smaller the b value is in nnj.Reciprocal (in the RBF net definition), the better
-            the variance estimates in the regions where we have latent codes (within the manifold).
-        -   The lower the beta value is in nnj.RBF, the looser the "borders" around your latent codes
-            is going to be. This makes sense as beta is a multiplicative factor on the pairwise distances
-            in the RBF kernel.
-    """
-    def __init__(self, in_dim, latent_dim, batch_size, num_centers, enc_layers, 
+    def __init__(self, in_dim, latent_dim, num_centers, enc_layers, 
                  dec_layers, act, out_fn, rbf_beta, rec_b):
+        """Constructor specs.
+        
+        Params:
+            in_dim:         int - input space dimensions
+            latent_dim:     int - latent space dimensions
+            num_centers:    int - number of centers for the RBF kernel
+            enc_layers:     list[int] - number of units per encoder layer
+            dec_layers:     list[int] - number of units per decoder layer
+            act:            torch.nn.Module - network activation functions
+            out_fn:         torch.nn.Module - network output function
+            rbf_beta:       float - the bandwidth of the RBF kernel
+            rec_b:          float - a small constant added to the reciprocal
+                            for the numerically stable precision 
+                            computations
+        """
+
         super(RVAE, self).__init__()
-        self.batch_size = batch_size
         self.num_centers = num_centers
         self.in_dim = in_dim
         self.latent_dim = latent_dim
@@ -65,8 +73,12 @@ class RVAE(nn.Module):
         device = "cuda" if torch.cuda.is_available() else "cpu"
         codes = []
         for _, (data, labels) in enumerate(data_loader):
-            dim1, dim2 = data.shape[-2], data.shape[-1]
-            z, _, _ = self.encode(data.view(-1, dim1 * dim2).to(device))
+            if data.dim() == 4:
+                data = data.view(-1, data.shape[-1] * data.shape[-2]).to(device)
+            elif data.dim() == 2:
+                data = data.view(-1, data.shape[-1]).to(device)
+
+            z, _, _ = self.encode(data)
             codes.append(z)
         self._latent_codes = torch.cat(codes, dim=0).view(-1, self.latent_dim)
     
@@ -77,11 +89,15 @@ class RVAE(nn.Module):
         self.p_sigma._modules['0'].points.data = torch.from_numpy(kmeans.cluster_centers_.astype(np.float32)).to(device)
         self.p_sigma._modules['0'].beta = beta
 
-    def _initialize_prior_means(self):
-        device = "cuda" if torch.cuda.is_available() else "cpu"
-        kmeans = KMeans(n_clusters=1)
-        kmeans.fit(self._latent_codes.detach().cpu().numpy())
-        self.pr_means.data = torch.from_numpy(kmeans.cluster_centers_.astype(np.float32)).to(device)
+    def _initialize_prior_means(self, hotstart=False):
+        if hotstart:
+            idx = np.random.randint(self.num_centers)
+            self.pr_means = torch.nn.Parameter(self.p_sigma._modules['0'].points.data[idx])
+        else:
+            device = "cuda" if torch.cuda.is_available() else "cpu"
+            kmeans = KMeans(n_clusters=1)
+            kmeans.fit(self._latent_codes.detach().cpu().numpy())
+            self.pr_means.data = torch.from_numpy(kmeans.cluster_centers_.astype(np.float32)).to(device)
 
     def decode(self, z, jacobian):
         if self._mean_warmup:
@@ -115,15 +131,29 @@ class RVAE(nn.Module):
                 sigma = self.p_sigma(z)
                 return mu, sigma
 
-    def generate(self, n_steps, epoch, device, viz=False):
+    def sample(self, num_steps, num_samples, keep_last, device):
         """Generate samples from a Brownian motion on the manifold.
+
+        Params:
+            num_steps:      int - the number of discretized steps
+                            of the simulated Brownian motion
+            num_samples:    int - the number of returned samples
+            keep_last:      bool - if true keeps only the last step 
+                            of the Brownian motion
+            device:         str - "cuda" or "cpu"
         """
+
         self.eval()
-        k = 1/self.n_components * torch.ones(self.n_components)
-        z = multibrownian_motion_sample(k, self.pr_means, self.pr_t, self.latent_dim, n_steps, self) 
-        x_mu, _ = self.decode(z[::n_steps//100], False)
+        samples = brownian_motion_sample(num_steps, num_samples, self.latent_dim, self.pr_t, self.pr_means.data, self)
         
-        return x_mu
+        if keep_last:
+            if samples.dim() == 3:
+                samples = samples[-1, :, :]
+            else:
+                samples = samples[-1, :]
+        x = self.p_mu(samples)
+        
+        return x, samples
 
     def metric(self, z):
         if z.dim() == 1:
@@ -147,8 +177,28 @@ class RVAE(nn.Module):
 
 
 class VAE(nn.Module):
+    """Variational autoencoder with an RBF network for the decoder."""
+
     def __init__(self, in_dim, latent_dim, num_centers, num_components, enc_layers, 
                  dec_layers, act, out_fn, rbf_beta, rec_b):
+        """Constructor specs.
+        
+        Params:
+            in_dim:             int - input space dimensions
+            latent_dim:         int - latent space dimensions
+            num_centers:        int - number of centers for the RBF kernel
+            num_components:     int - number of components for the prior, where
+                                num_components = 1 -> VAE w/ standard Normal prior
+                                num_components >1 -> VAE w/ VampPrior
+            enc_layers:         list[int] - number of units per encoder layer
+            dec_layers:         list[int] - number of units per decoder layer
+            act:                torch.nn.Module - network activation functions
+            out_fn:             torch.nn.Module - network output function
+            rbf_beta:           float - the bandwidth of the RBF kernel
+            rec_b:              float - a small constant added to the reciprocal
+                                for the numerically stable precision 
+                                computations"""
+        
         super(VAE, self).__init__()
         self.latent_dim = latent_dim
         self.num_centers = num_centers
@@ -219,9 +269,12 @@ class VAE(nn.Module):
 
         return mu, sigma**2
 
-    def generate(self, batch_size, epoch):
-        z = torch.randn(batch_size, self.latent_dim)
+    def generate(self, num_samples):
+        if self.num_components == 1:
+            z = torch.randn(num_samples, self.latent_dim)
+        
         p_mu, _ = self.decode(z)
+        
         return p_mu
 
     def forward(self, x):

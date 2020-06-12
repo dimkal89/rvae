@@ -82,7 +82,8 @@ def connecting_geodesic(net, p0, p1, optim=torch.optim.SGD, max_iter=25, n_nodes
             opt.step()
             if torch.max(torch.abs(curve.parameters.grad)) < 1e-4:
                 break
-    return curve, curve_energies.mean(-1).detach_()
+    
+    return curve, curve_energies.detach_()
 
 
 def log_bm_krn(x, y, t, model):
@@ -106,13 +107,15 @@ def log_bm_krn(x, y, t, model):
     return -d/2 * torch.log(2 * pi * t) + log_H - l_sq/(2 * t)
 
 
-def brownian_motion_sample(n_steps, dim, t, init_point, model):
+def brownian_motion_sample(num_steps, num_samples, dim, t, init_point, model):
     """Returns the points of a discretized Brownian motion (BM)
     on a manifold (a.k.a. latent space).
 
     params:
-        n_steps:        int - the number of time steps for which 
+        num_steps:      int - the number of time steps for which 
                         the BM will run
+        num_samples:    int - the number of samples that will be
+                        returned
         dim:            int - the dimensionality of the manifold/
                         latent space
         t:              float - the time for which the BM will run
@@ -121,16 +124,19 @@ def brownian_motion_sample(n_steps, dim, t, init_point, model):
                         embedding
     """ 
     if init_point is None:
-        init_point = torch.zeros(dim)
+        init_point = torch.zeros(num_samples, dim)
     samples = [init_point.squeeze()]
+
+    if num_samples > 1:
+        samples[0] = samples[0].expand(num_samples, dim)
     
-    for _ in range(n_steps - 1):
+    for _ in range(num_steps - 1):
         g = model.metric(samples[-1])
-        cov_mat = t/n_steps * g.squeeze().inverse()
+        cov_mat = t/num_steps * g.squeeze().inverse()
         mvn = torch.distributions.multivariate_normal.MultivariateNormal(samples[-1], covariance_matrix=cov_mat)
         samples.append(mvn.sample().squeeze())
     
-    return torch.stack(samples)
+    return torch.cat(samples).view(num_steps, num_samples, dim).squeeze()
 
 
 def multibrownian_motion_sample(k, mu, t, dim, n_steps, model):
