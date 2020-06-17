@@ -1,4 +1,12 @@
 # Variational Autoencoders with Riemannian Brownian Motion Prior
+<div class="row">
+  <div class="column">
+    <img src="./moons_density.png" height="250">
+  </div>
+  <div class="column">
+    <img src="./mnist_toy_density.png" height="250">
+  </div>
+</div>
 
 Code for the paper [Variational Autoencoders with Riemannian Brownian Motion Priors](https://arxiv.org/abs/2002.05227) \
 by Dimitris Kalatzis, David Eklund, Georgios Arvanitidis, and Søren Hauberg
