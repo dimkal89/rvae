@@ -1,10 +1,10 @@
 # Variational Autoencoders with Riemannian Brownian Motion Prior
 <div class="row">
   <div class="column">
-    <img src="./moons_density.png" height="250">
+    <img src="./moons_density.png" height="200">
   </div>
   <div class="column">
-    <img src="./mnist_toy_density.png" height="250">
+    <img src="./mnist_toy_density.png" height="200">
   </div>
 </div>
 
