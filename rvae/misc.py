@@ -14,7 +14,7 @@ class DistSqKL(torch.autograd.Function):
         b_sz = p0.shape[0]
         with torch.no_grad():
             with torch.enable_grad():
-                crv, energy = connecting_geodesic(net, p0, p1, max_iter=12, n_nodes=5, eval_grid=16, l_rate=1e-3)
+                crv, energy = connecting_geodesic(net, p0, p1, max_iter=6, n_nodes=5, eval_grid=16, l_rate=1e-3)
                 lm0 = crv.deriv(torch.zeros(1, device=device)).view(b_sz, -1)
                 lm1 = crv.deriv(torch.ones(1, device=device)).view(b_sz, -1)
                 ctx.save_for_backward(lm0, lm1)
@@ -139,36 +139,6 @@ def brownian_motion_sample(num_steps, num_samples, dim, t, init_point, model):
     return torch.cat(samples).view(num_steps, num_samples, dim).squeeze()
 
 
-def multibrownian_motion_sample(k, mu, t, dim, n_steps, model):
-    """Returns the points of a discretized mixture of Brownian
-    motions (mBM) on a manifold (a.k.a) latent space given
-    mixture probabilities, means and time lengths.
-
-    params:
-        k:          torch.tensor - mixture probabilities
-        mu:         torch.tensor - the "means"/centers of 
-                    the BMs
-        t:          float - the time for which the BM will run
-        dim:        int - the dimensionality of the manifold/
-                    latent space
-        n_steps:    int - the number of discretized time steps 
-                    for which the BM will run
-        model:      torch.nn.Module - the model containing the
-                    embedding
-    """
-    idx = Categorical(probs=k).sample()
-    samples = [mu[idx]]
-
-    for _ in range(n_steps - 1):
-        g = model.metric(samples[-1])
-        g_inv = g.squeeze().inverse()
-        cov_mat = (t[idx]/n_steps) * g_inv
-        mvn = torch.distributions.multivariate_normal.MultivariateNormal(samples[-1], covariance_matrix=cov_mat)
-        samples.append(mvn.sample().squeeze())
-    
-    return torch.stack(samples)
-
-
 def log_gauss_mix(x, mu, var):
     # number of components
     K = mu.shape[0]
@@ -180,7 +150,7 @@ def log_gauss_mix(x, mu, var):
     a = log_Normal_diag(x_xp, mu_xp, torch.log(var_xp + 1e-5), dim=2) - math.log(K)
     a_max, _ = torch.max(a, 1)  # MB x 1
 
-    # calculte log-sum-exp
+    # calculate log-sum-exp
     log_mix = a_max + torch.log(torch.sum(torch.exp(a - a_max.unsqueeze(1)), 1))
 
     return log_mix
@@ -203,9 +173,3 @@ def linear_interpolation(p0, p1, n_points):
         c_pts[i] = c_pts[i - 1] + 1/n_points * (p1 - p0)
     
     return c_pts
-
-if __name__ == "__main__":
-    x = torch.randn(10, 5)
-    mu = torch.randn(10, 5)
-    var = torch.abs(torch.randn_like(mu))
-    log_gauss_mix(x, mu, var)
