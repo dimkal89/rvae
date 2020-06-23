@@ -95,22 +95,11 @@ class Experiment():
             self.model.switch = False
             self.model._update_latent_codes(self.train_loader)
             self.model._update_RBF_centers(beta=0.01)
-            
-            # decoder sigma/prior parameters optimization
-            for epoch in range(1, (self.sigma_epochs - 10) + 1):
-                loss, _, _ = train_rvae(epoch, self.train_loader, self.batch_size, self.model, 
-                                        sigma_optimizer, self.log_invl, self.device)
-                print("\tEpoch: {} (sigma optimization), negative ELBO: {:.3f}".format(epoch, loss))
-
-                if epoch % self.save_invl == 0:
-                    savepath = os.path.join(self.rvae_save_dir,
-                                            self.dataset+"_epoch"+str(epoch)+"ckpt")
-                    save_model(self.model, sigma_optimizer, epoch, loss, savepath)
-            
             self.model._mean_warmup = False
             self.model._initialize_prior_means()
             
-            for epoch in range(self.sigma_epochs - 10, self.sigma_epochs + 1):
+            # decoder sigma/prior parameters optimization
+            for epoch in range(1, self.sigma_epochs + 1):
                 loss, _, _ = train_rvae(epoch, self.train_loader, self.batch_size, self.model, 
                                         sigma_optimizer, self.log_invl, self.device)
                 print("\tEpoch: {} (sigma optimization), negative ELBO: {:.3f}".format(epoch, loss))
@@ -143,7 +132,7 @@ class Experiment():
 
             # encoder/decoder mean optimization
             for epoch in range(1, self.mu_epochs + 1):
-                loss, _, _ = train_vae(epoch, 100, self.train_loader, self.batch_size, self.model, 
+                loss, _, _ = train_vae(epoch, self.mu_epochs, self.train_loader, self.batch_size, self.model, 
                                        warmup_optimizer, self.log_invl, self.device)
                 print("\tEpoch: {} (warmup phase), negative ELBO: {:.3f}".format(epoch, loss))
 
