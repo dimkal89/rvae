@@ -1,11 +1,15 @@
 # Variational Autoencoders with Riemannian Brownian Motion Priors
-<img src="./moons_density.png" height="275">
+<p float="left">
+  <img src="./moons_density.png" height="200" />
+  <img src="/mnist_toy_density.png" height="205" /> 
+</p>
+
 
 Code for the paper [Variational Autoencoders with Riemannian Brownian Motion Priors](https://arxiv.org/abs/2002.05227) \
 by Dimitris Kalatzis, David Eklund, Georgios Arvanitidis, and Søren Hauberg
 
 ## Models and data sets
-The model proposed in the paper is VAE with Riemannian Brownian motion prior (RVAE) and the experimental baselines are (a) a vanilla [VAE](https://arxiv.org/abs/1312.6114) with a standard Gaussian prior and (b) a [VAE with VampPrior](https://arxiv.org/abs/1705.07120).
+The model proposed in the paper is a VAE with a Riemannian Brownian motion prior (RVAE) and the experimental baselines are (a) a vanilla [VAE](https://arxiv.org/abs/1312.6114) with a standard Gaussian prior and (b) a [VAE with a VampPrior](https://arxiv.org/abs/1705.07120).
 
 The datasets used in the experiments are MNIST and FashionMNIST.
 
